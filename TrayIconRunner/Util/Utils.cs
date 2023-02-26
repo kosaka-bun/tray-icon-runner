@@ -47,12 +47,18 @@ public static class Utils {
             runCommand = extTypeKey.GetValue("").ToString();
         }
         int quote1Index = runCommand.IndexOf("\"", StringComparison.Ordinal);
-        if(quote1Index == -1) return null;
+        if(quote1Index == -1) {
+            return runCommand.Substring(0, runCommand.IndexOf(" ",
+                StringComparison.Ordinal)).Trim();
+        }
         int quote2Index = runCommand.IndexOf(".exe\"", StringComparison.Ordinal);
         if(quote2Index == -1) {
             quote2Index = runCommand.IndexOf(".EXE\"", StringComparison.Ordinal);
         }
-        if(quote2Index == -1) return null;
+        if(quote2Index == -1) {
+            return runCommand.Substring(0, runCommand.IndexOf(" ",
+                StringComparison.Ordinal)).Trim();
+        }
         quote2Index += 4;
         return runCommand.Substring(quote1Index + 1, quote2Index - 1);
     }

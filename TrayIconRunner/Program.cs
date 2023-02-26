@@ -1,4 +1,5 @@
-﻿using System.Windows.Forms;
+﻿using System.Threading;
+using System.Windows.Forms;
 using TrayIconRunner.Util;
 
 // ReSharper disable MemberCanBePrivate.Global
@@ -20,7 +21,7 @@ internal static class Program {
         string inputFilePath = args[0];
         mainForm = new MainForm();
         launcher = new Launcher(inputFilePath);
-        launcher.launch();
+        new Thread(launcher.launch).Start();
         using(mainForm) {
             Application.Run();
         }
