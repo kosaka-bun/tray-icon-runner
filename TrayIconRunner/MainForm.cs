@@ -12,6 +12,8 @@ public partial class MainForm : Form {
     
     public NotifyIcon systemTrayIcon => notifyIcon1;
 
+    public bool isWindowShow = true;
+
     public MainForm() {
         InitializeComponent();
         customInitializeComponent();
@@ -25,9 +27,11 @@ public partial class MainForm : Form {
     private void notifyIcon1_MouseClick(object sender, MouseEventArgs e) {
         if(!Program.launcher.launched) return;
         if(e.Button != MouseButtons.Left) return;
+        if(isWindowShow) return;
         WinEventHookUtils.ShowWindow(Program.launcher.process.MainWindowHandle, 
             9);
         WinEventHookUtils.SetForegroundWindow(Program.launcher.process.MainWindowHandle);
+        isWindowShow = true;
     }
 }
 

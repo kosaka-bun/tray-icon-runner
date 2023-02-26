@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Threading;
 using System.Windows.Forms;
 using Newtonsoft.Json.Linq;
 using TrayIconRunner.Util;
@@ -25,6 +26,8 @@ public class Launcher {
     public bool launched;
 
     private IntPtr minimizeEventHookId;
+
+    private Thread winEventListener;
 
     public Launcher(string filePath) {
         this.filePath = filePath;
@@ -86,7 +89,6 @@ public class Launcher {
         hookMinimizeEvent();
         process.WaitForExit();
         //进程结束，取消hook并退出
-        WinEventHookUtils.UnhookWinEvent(minimizeEventHookId);
         Application.Exit();
     }
 
@@ -115,10 +117,15 @@ public class Launcher {
     private void hookMinimizeEvent() {
         //https://learn.microsoft.com/zh-cn/windows/win32/winauto/event-constants
         const uint EVENT_TYPE_ID = 0x0016;
-        minimizeEventHookId = WinEventHookUtils.SetWinEventHook(
-            EVENT_TYPE_ID, EVENT_TYPE_ID,
-            IntPtr.Zero, winEventCallback,
-            (uint) process.Id, 0, 0);
+        winEventListener = new Thread(() => {
+            minimizeEventHookId = WinEventHookUtils.SetWinEventHook(
+                EVENT_TYPE_ID, EVENT_TYPE_ID,
+                IntPtr.Zero, winEventCallback,
+                (uint)process.Id, 0, 0);
+            Application.Run();
+            WinEventHookUtils.UnhookWinEvent(minimizeEventHookId);
+        });
+        winEventListener.Start();
     }
     
     private void winEventCallback(IntPtr hWinEventHook, uint eventType, IntPtr hWnd, 
@@ -128,6 +135,7 @@ public class Launcher {
         if(process.MainWindowHandle.ToInt32() != hWnd.ToInt32()) return;
         //隐藏指定窗口
         WinEventHookUtils.ShowWindow(hWnd, 0);
+        Program.mainForm.isWindowShow = false;
     }
 }
 
