@@ -64,6 +64,7 @@
         <Compile Include="Program.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />
         <Compile Include="Test\AllTest.cs" />
+        <Compile Include="Util\AssociatedPrograms.cs" />
         <Compile Include="Util\Constant.cs" />
         <Compile Include="Util\IconUtils.cs" />
         <Compile Include="Util\Utils.cs" />

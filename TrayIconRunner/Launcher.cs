@@ -78,6 +78,10 @@ public class Launcher {
             }
             string extName = fileToOpen.Substring(pointIndex);
             exePath = Utils.getAssociatedProgramPath(extName);
+            // ReSharper disable once ConvertIfStatementToNullCoalescingExpression
+            if(exePath == null) {
+                exePath = AssociatedPrograms.get(extName);
+            }
             if(exePath == null) {
                 Utils.messageBox($"未找到 {fileToOpen} 的关联程序", 
                     MessageBoxIcon.Error);
