@@ -1,6 +1,8 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Reflection;
 using System.Windows.Forms;
+using Microsoft.Win32;
 
 // ReSharper disable InconsistentNaming
 
@@ -29,6 +31,30 @@ public static class Utils {
         streamReader.Close();
         fileStream.Close();
         return content;
+    }
+
+    public static string getAssociatedProgramPath(string extName) {
+        string extTypeKeyName;
+        using(RegistryKey extKey = Registry.ClassesRoot.OpenSubKey(extName)) {
+            if(extKey == null) return null;
+            extTypeKeyName = extKey.GetValue("") + 
+                "\\shell\\open\\command";
+        }
+        string runCommand;
+        using(RegistryKey extTypeKey = Registry.ClassesRoot
+                  .OpenSubKey(extTypeKeyName)) {
+            if(extTypeKey == null) return null;
+            runCommand = extTypeKey.GetValue("").ToString();
+        }
+        int quote1Index = runCommand.IndexOf("\"", StringComparison.Ordinal);
+        if(quote1Index == -1) return null;
+        int quote2Index = runCommand.IndexOf(".exe\"", StringComparison.Ordinal);
+        if(quote2Index == -1) {
+            quote2Index = runCommand.IndexOf(".EXE\"", StringComparison.Ordinal);
+        }
+        if(quote2Index == -1) return null;
+        quote2Index += 4;
+        return runCommand.Substring(quote1Index + 1, quote2Index - 1);
     }
 }
 
