@@ -56,8 +56,12 @@ public static class Utils {
             quote2Index = runCommand.IndexOf(".EXE\"", StringComparison.Ordinal);
         }
         if(quote2Index == -1) {
-            return runCommand.Substring(0, runCommand.IndexOf(" ",
-                StringComparison.Ordinal)).Trim();
+            string result = runCommand.Substring(0, 
+                runCommand.IndexOf(" ", StringComparison.Ordinal)
+            ).Trim();
+            if(!result.EndsWith(".exe") && !result.EndsWith(".EXE")) {
+                return null;
+            }
         }
         quote2Index += 4;
         return runCommand.Substring(quote1Index + 1, quote2Index - 1);

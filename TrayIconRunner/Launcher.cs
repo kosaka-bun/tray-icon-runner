@@ -121,9 +121,8 @@ public class Launcher {
                 CreateNoWindow = false
             }
         };
-        if(arg != null) {
-            process.StartInfo.Arguments = $"\"{arg}\"";
-        }
+        if(arg == null) return;
+        process.StartInfo.Arguments = arg.Contains("\"") ? arg : $"\"{arg}\"";
     }
 
     private void hookMinimizeEvent() {
