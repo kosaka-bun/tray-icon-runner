@@ -23,7 +23,11 @@ public partial class MainForm : Form {
     }
 
     private void notifyIcon1_MouseClick(object sender, MouseEventArgs e) {
-        // throw new System.NotImplementedException();
+        if(!Program.launcher.launched) return;
+        if(e.Button != MouseButtons.Left) return;
+        WinEventHookUtils.ShowWindow(Program.launcher.process.MainWindowHandle, 
+            9);
+        WinEventHookUtils.SetForegroundWindow(Program.launcher.process.MainWindowHandle);
     }
 }
 

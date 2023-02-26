@@ -20,7 +20,11 @@ public class Launcher {
     
     private readonly string filePath;
 
-    private Process process;
+    public Process process;
+
+    public bool launched;
+
+    private IntPtr minimizeEventHookId;
 
     public Launcher(string filePath) {
         this.filePath = filePath;
@@ -78,7 +82,11 @@ public class Launcher {
         }
         Program.mainForm.systemTrayIcon.Text = iconName;
         process.Start();
+        launched = true;
+        hookMinimizeEvent();
         process.WaitForExit();
+        //进程结束，取消hook并退出
+        WinEventHookUtils.UnhookWinEvent(minimizeEventHookId);
         Application.Exit();
     }
 
@@ -102,6 +110,24 @@ public class Launcher {
         if(arg != null) {
             process.StartInfo.Arguments = $"\"{arg}\"";
         }
+    }
+
+    private void hookMinimizeEvent() {
+        //https://learn.microsoft.com/zh-cn/windows/win32/winauto/event-constants
+        const uint EVENT_TYPE_ID = 0x0016;
+        minimizeEventHookId = WinEventHookUtils.SetWinEventHook(
+            EVENT_TYPE_ID, EVENT_TYPE_ID,
+            IntPtr.Zero, winEventCallback,
+            (uint) process.Id, 0, 0);
+    }
+    
+    private void winEventCallback(IntPtr hWinEventHook, uint eventType, IntPtr hWnd, 
+        int idObject, int idChild, uint dwEventThread, uint dwmsEventTime) {
+        if(idObject != 0 || idChild != 0) return;
+        //判断事件是否来自于主窗口
+        if(process.MainWindowHandle.ToInt32() != hWnd.ToInt32()) return;
+        //隐藏指定窗口
+        WinEventHookUtils.ShowWindow(hWnd, 0);
     }
 }
 

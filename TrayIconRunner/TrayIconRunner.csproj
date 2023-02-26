@@ -67,6 +67,7 @@
         <Compile Include="Util\Constant.cs" />
         <Compile Include="Util\IconUtils.cs" />
         <Compile Include="Util\Utils.cs" />
+        <Compile Include="Util\WinEventHookUtils.cs" />
         <EmbeddedResource Include="MainForm.resx">
           <DependentUpon>MainForm.cs</DependentUpon>
         </EmbeddedResource>
