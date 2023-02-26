@@ -62,6 +62,27 @@ public static class Utils {
         quote2Index += 4;
         return runCommand.Substring(quote1Index + 1, quote2Index - 1);
     }
+
+    public static string calcAbsolutePath(string basePath, string relativePath) {
+        string path = basePath;
+        path = path.Substring(0, path.LastIndexOf("\\", 
+            StringComparison.Ordinal));
+        string[] parts = relativePath.Split('\\');
+        foreach(string part in parts) {
+            switch(part) {
+                case ".":
+                    continue;
+                case "..":
+                    path = path.Substring(0, path.LastIndexOf(
+                        "\\", StringComparison.Ordinal));
+                    continue;
+                default:
+                    path += $"\\{part}";
+                    continue;
+            }
+        }
+        return path;
+    }
 }
 
 }

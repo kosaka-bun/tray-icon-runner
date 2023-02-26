@@ -11,7 +11,7 @@ namespace TrayIconRunner.Util {
 public static class IconUtils {
     
     [DllImport("Shell32.dll")]
-    static extern int SHGetFileInfo(string pszPath, uint dwFileAttributes, 
+    private static extern int SHGetFileInfo(string pszPath, uint dwFileAttributes, 
         ref SHFILEINFO psfi, uint cbFileInfo, uint uFlags);
 
     /// <summary>

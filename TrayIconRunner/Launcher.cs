@@ -44,6 +44,7 @@ public class Launcher {
                 filePath.Length - suffix.Length) + ".exe";
             if(!File.Exists(exePath)) {
                 Utils.messageBox($"{exePath} 文件不存在", MessageBoxIcon.Error);
+                Application.Exit();
                 return;
             }
             initProcess(exePath);
@@ -54,6 +55,16 @@ public class Launcher {
             fileToOpen = jo["file"]?.Value<string>().Trim();
             if(fileToOpen == null) {
                 Utils.messageBox("没有提供要打开的文件", MessageBoxIcon.Error);
+                Application.Exit();
+                return;
+            }
+            if(!fileToOpen.Contains(":\\")) {
+                fileToOpen = Utils.calcAbsolutePath(filePath,
+                    fileToOpen);
+            }
+            if(!File.Exists(fileToOpen)) {
+                Utils.messageBox($"{fileToOpen} 文件不存在", MessageBoxIcon.Error);
+                Application.Exit();
                 return;
             }
             //读取指定扩展名的关联程序路径
@@ -89,6 +100,7 @@ public class Launcher {
         hookMinimizeEvent();
         process.WaitForExit();
         //进程结束，取消hook并退出
+        winEventListener.Interrupt();
         Application.Exit();
     }
 
@@ -121,7 +133,7 @@ public class Launcher {
             minimizeEventHookId = WinEventHookUtils.SetWinEventHook(
                 EVENT_TYPE_ID, EVENT_TYPE_ID,
                 IntPtr.Zero, winEventCallback,
-                (uint)process.Id, 0, 0);
+                (uint) process.Id, 0, 0);
             Application.Run();
             WinEventHookUtils.UnhookWinEvent(minimizeEventHookId);
         });
