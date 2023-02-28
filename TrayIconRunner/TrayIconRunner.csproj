@@ -42,7 +42,11 @@
           <HintPath>..\packages\NUnit.3.13.3\lib\net45\nunit.framework.dll</HintPath>
         </Reference>
         <Reference Include="System" />
+        <Reference Include="System.CodeDom, Version=7.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+          <HintPath>..\packages\System.CodeDom.7.0.0\lib\net462\System.CodeDom.dll</HintPath>
+        </Reference>
         <Reference Include="System.Core" />
+        <Reference Include="System.Management" />
         <Reference Include="System.Xml.Linq" />
         <Reference Include="System.Data.DataSetExtensions" />
         <Reference Include="Microsoft.CSharp" />

@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Management;
 using System.Reflection;
 using System.Windows.Forms;
 using Microsoft.Win32;
@@ -86,6 +88,18 @@ public static class Utils {
             }
         }
         return path;
+    }
+    
+    public static List<int> getSubProcessId(int pid) {
+        var list = new List<int>();
+        var searcher = new ManagementObjectSearcher("Select * From " +
+            $"Win32_Process Where ParentProcessID = {pid}");
+        ManagementObjectCollection moc = searcher.Get();
+        foreach(ManagementBaseObject o in moc) {
+            var mo = (ManagementObject) o;
+            list.Add(Convert.ToInt32(mo["ProcessID"]));
+        }
+        return list;
     }
 }
 

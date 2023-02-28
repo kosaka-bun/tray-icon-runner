@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
@@ -25,7 +26,7 @@ public class Launcher {
 
     public bool launched;
 
-    private IntPtr minimizeEventHookId;
+    private readonly List<IntPtr> minimizeEventHookIds = new List<IntPtr>();
 
     private Thread winEventListener;
 
@@ -37,17 +38,19 @@ public class Launcher {
         //读取专有文件
         string content = Utils.readFileToString(filePath);
         //如果文件为空，则调用该文件所在目录下，与该文件同名的，后缀名为.exe的文件
+        string exePath, extName, iconName, fileToOpen;
         #region
-        string exePath, iconName = null, fileToOpen;
         if(content.Length <= 0) {
+            extName = ".exe";
             fileToOpen = exePath = filePath.Substring(0, 
-                filePath.Length - suffix.Length) + ".exe";
+                filePath.Length - suffix.Length) + extName;
             if(!File.Exists(exePath)) {
                 Utils.messageBox($"{exePath} 文件不存在", MessageBoxIcon.Error);
                 Application.Exit();
                 return;
             }
-            initProcess(exePath);
+            iconName = fileToOpen.Substring(fileToOpen.LastIndexOf("\\",
+                StringComparison.Ordinal) + 1);
         } else {
             //解析专有文件
             JObject jo = JObject.Parse(content);
@@ -76,7 +79,7 @@ public class Launcher {
                 Application.Exit();
                 return;
             }
-            string extName = fileToOpen.Substring(pointIndex);
+            extName = fileToOpen.Substring(pointIndex);
             exePath = Utils.getAssociatedProgramPath(extName);
             // ReSharper disable once ConvertIfStatementToNullCoalescingExpression
             if(exePath == null) {
@@ -88,20 +91,23 @@ public class Launcher {
                 Application.Exit();
                 return;
             }
-            initProcess(exePath, fileToOpen);
         }
         #endregion
-        //启动进程
-        Program.mainForm.systemTrayIcon.Icon = IconUtils.GetFileIcon(exePath, 
-            false);
-        if(iconName == null) {
-            iconName = fileToOpen.Substring(fileToOpen.LastIndexOf("\\",
-                StringComparison.Ordinal) + 1);
+        if(extName.ToLower().Equals(".exe")) {
+            initProcess(fileToOpen);
+        } else if(AssociatedPrograms.isDirectRunExtName(extName.ToLower())) {
+            initDirectRunProcess(fileToOpen);
+        } else {
+            initProcess(exePath, fileToOpen);
         }
+        //启动进程
+        Program.mainForm.systemTrayIcon.Icon = IconUtils.GetFileIcon(extName, 
+            false);
         Program.mainForm.systemTrayIcon.Text = iconName;
         process.Start();
         launched = true;
-        hookMinimizeEvent();
+        hookMinimizeEvent(AssociatedPrograms
+            .isDirectRunExtName(extName.ToLower()));
         process.WaitForExit();
         //进程结束，取消hook并退出
         winEventListener.Interrupt();
@@ -129,16 +135,46 @@ public class Launcher {
         process.StartInfo.Arguments = arg.Contains("\"") ? arg : $"\"{arg}\"";
     }
 
-    private void hookMinimizeEvent() {
+    private void initDirectRunProcess(string fileName) {
+        process = new Process {
+            StartInfo = {
+                //设置要启动的应用程序
+                FileName = fileName,
+                //是否使用操作系统shell启动
+                UseShellExecute = true,
+                //接受来自调用程序的输入信息
+                RedirectStandardInput = false,
+                //输出信息
+                RedirectStandardOutput = false,
+                //输出错误
+                RedirectStandardError = false,
+                //不显示程序窗口
+                CreateNoWindow = false
+            }
+        };
+    }
+
+    private void hookMinimizeEvent(bool hookSubProcesses) {
         //https://learn.microsoft.com/zh-cn/windows/win32/winauto/event-constants
         const uint EVENT_TYPE_ID = 0x0016;
-        winEventListener = new Thread(() => {
-            minimizeEventHookId = WinEventHookUtils.SetWinEventHook(
+        void doHook(int pid) {
+            minimizeEventHookIds.Add(WinEventHookUtils.SetWinEventHook(
                 EVENT_TYPE_ID, EVENT_TYPE_ID,
                 IntPtr.Zero, winEventCallback,
-                (uint) process.Id, 0, 0);
+                (uint) pid, 0, 0
+            ));
+        }
+        winEventListener = new Thread(() => {
+            doHook(process.Id);
+            if(hookSubProcesses) {
+                foreach(int sPid in Utils.getSubProcessId(process.Id)) {
+                    doHook(sPid);
+                }
+            }
             Application.Run();
-            WinEventHookUtils.UnhookWinEvent(minimizeEventHookId);
+            foreach(IntPtr hookIds in minimizeEventHookIds) {
+                WinEventHookUtils.UnhookWinEvent(hookIds);
+            }
         });
         winEventListener.Start();
     }
