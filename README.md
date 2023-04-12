@@ -53,12 +53,12 @@
 
 ```json
 {
-	"file": "Virtual Machine.vmx",
-	"name": "Virtual Machine",
-	"executor": "C:\\Program Files (x86)\\VMware\\VMware Workstation\\vmplayer.exe"
+  "file": "Virtual Machine.vmx",
+  "name": "Virtual Machine",
+  "executor": "C:\\Program Files (x86)\\VMware\\VMware Workstation\\vmplayer.exe"
 }
 ```
 
-上例当中，我们添加了一个key为`executor`的键值对，其中指定了要用来打开`Virtual Machine.vmx`的可执行程序，TrayIconRunner将使用它。
+上例当中，我们添加了一个key为`executor`的键值对，其中指定了要用来打开`Virtual Machine.vmx`的可执行程序，TrayIconRunner将使用它。需要注意的是，`executor`键对应的值（路径）当中的反斜杠，必须按照JSON规范进行转义。
 
 如果`.tir`文件中不包含key为`executor`的键值对，则TrayIconRunner将自动根据key为`file`的键值对中的文件扩展名，寻找要用来打开这个文件的可执行程序。
