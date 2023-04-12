@@ -12,5 +12,6 @@ Global
 		{EBD717CD-0239-4A88-BBA1-0C6E176DDE8F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EBD717CD-0239-4A88-BBA1-0C6E176DDE8F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EBD717CD-0239-4A88-BBA1-0C6E176DDE8F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EBD717CD-0239-4A88-BBA1-0C6E176DDE8F}.Release|Any CPU.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

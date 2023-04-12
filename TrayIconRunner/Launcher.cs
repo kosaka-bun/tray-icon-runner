@@ -96,7 +96,7 @@ public class Launcher {
         if(extName.ToLower().Equals(".exe")) {
             initProcess(fileToOpen);
         } else if(AssociatedPrograms.isDirectRunExtName(extName.ToLower())) {
-            initDirectRunProcess(fileToOpen);
+            initProcess(fileToOpen, directRun: true);
         } else {
             initProcess(exePath, fileToOpen);
         }
@@ -114,13 +114,14 @@ public class Launcher {
         Application.Exit();
     }
 
-    private void initProcess(string fileName, string arg = null) {
+    private void initProcess(string fileName, string arg = null, 
+        bool directRun = false) {
         process = new Process {
             StartInfo = {
                 //设置要启动的应用程序
                 FileName = fileName,
                 //是否使用操作系统shell启动
-                UseShellExecute = false,
+                UseShellExecute = directRun,
                 //接受来自调用程序的输入信息
                 RedirectStandardInput = false,
                 //输出信息
@@ -131,27 +132,8 @@ public class Launcher {
                 CreateNoWindow = false
             }
         };
-        if(arg == null) return;
+        if(directRun || arg == null) return;
         process.StartInfo.Arguments = arg.Contains("\"") ? arg : $"\"{arg}\"";
-    }
-
-    private void initDirectRunProcess(string fileName) {
-        process = new Process {
-            StartInfo = {
-                //设置要启动的应用程序
-                FileName = fileName,
-                //是否使用操作系统shell启动
-                UseShellExecute = true,
-                //接受来自调用程序的输入信息
-                RedirectStandardInput = false,
-                //输出信息
-                RedirectStandardOutput = false,
-                //输出错误
-                RedirectStandardError = false,
-                //不显示程序窗口
-                CreateNoWindow = false
-            }
-        };
     }
 
     private void hookMinimizeEvent(bool hookSubProcesses) {
