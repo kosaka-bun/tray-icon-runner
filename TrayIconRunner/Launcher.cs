@@ -56,6 +56,7 @@ public class Launcher {
             JObject jo = JObject.Parse(content);
             iconName = jo["name"]?.Value<string>().Trim();
             fileToOpen = jo["file"]?.Value<string>().Trim();
+            exePath = jo["executor"]?.Value<string>().Trim();
             if(fileToOpen == null) {
                 Utils.messageBox("没有提供要打开的文件", MessageBoxIcon.Error);
                 Application.Exit();
@@ -80,7 +81,9 @@ public class Launcher {
                 return;
             }
             extName = fileToOpen.Substring(pointIndex);
-            exePath = Utils.getAssociatedProgramPath(extName);
+            if(exePath == null) {
+                exePath = Utils.getAssociatedProgramPath(extName);
+            }
             // ReSharper disable once ConvertIfStatementToNullCoalescingExpression
             if(exePath == null) {
                 exePath = AssociatedPrograms.get(extName);
@@ -88,6 +91,11 @@ public class Launcher {
             if(exePath == null) {
                 Utils.messageBox($"未找到 {fileToOpen} 的关联程序", 
                     MessageBoxIcon.Error);
+                Application.Exit();
+                return;
+            }
+            if(!File.Exists(exePath)) {
+                Utils.messageBox($"{exePath} 文件不存在", MessageBoxIcon.Error);
                 Application.Exit();
                 return;
             }

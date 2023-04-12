@@ -48,3 +48,17 @@
 `.tir`文件为JSON格式，但也可以为空文件。
 
 假设某目录下有一个`test.exe`文件，则我们可以在该目录下创建一个名为`test.tir`的空文件，双击打开它时，TrayIconRunner将会打开与`.tir`文件在同一个目录下的、同名的`.exe`文件，并为其创建托盘图标。
+
+如果您不想让TrayIconRunner根据文件的扩展名自动查找要打开的程序，可以在`.tir`文件中，手动指定要用来打开文件的可执行程序。
+
+```json
+{
+	"file": "Virtual Machine.vmx",
+	"name": "Virtual Machine",
+	"executor": "C:\\Program Files (x86)\\VMware\\VMware Workstation\\vmplayer.exe"
+}
+```
+
+上例当中，我们添加了一个key为`executor`的键值对，其中指定了要用来打开`Virtual Machine.vmx`的可执行程序，TrayIconRunner将使用它。
+
+如果`.tir`文件中不包含key为`executor`的键值对，则TrayIconRunner将自动根据key为`file`的键值对中的文件扩展名，寻找要用来打开这个文件的可执行程序。
