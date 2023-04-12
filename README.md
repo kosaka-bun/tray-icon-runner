@@ -1,6 +1,6 @@
 # TrayIconRunner
 
-![DotNet](https://img.shields.io/badge/.Net-4.7.2-brightgreen?logo=dotnet)
+![DotNet](https://img.shields.io/badge/.Net%20Framework-4.7.2-brightgreen?logo=dotnet)
 [![License](https://img.shields.io/github/license/kosaka-bun/tray-icon-runner?label=License&color=blue&logo=GitHub)](./LICENSE)
 ![GitHub Stars](https://img.shields.io/github/stars/kosaka-bun/tray-icon-runner?label=Stars&logo=GitHub)
 [![Release](https://img.shields.io/github/release/kosaka-bun/tray-icon-runner?label=Release&logo=GitHub)](../../releases)
@@ -19,7 +19,7 @@
 ## 用法
 以Elastic Search为例，Elastic Search是通过脚本启动的，启动后会持续保留一个控制台窗口，不便使用。
 
-首先[下载](./releases/latest)TrayIconRunner的可执行程序，并将其解压到一个目录中。
+首先[下载](../../releases/latest)TrayIconRunner的可执行程序，并将其解压到一个目录中。
 
 在其启动脚本所在的目录，即`{安装目录}/bin`目录下，创建一个名为`startup.tir`的文件，在其中输入以下内容并保存。
 
