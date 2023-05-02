@@ -54,10 +54,16 @@ public class Launcher {
                 StringComparison.Ordinal) + 1);
         } else {
             //解析专有文件
-            var tirFile = JsonConvert.DeserializeObject<TirFile>(content);
-            iconName = tirFile.name?.Trim();
-            fileToOpen = tirFile.file?.Trim();
-            exePath = tirFile.executor?.Trim();
+            try {
+                var tirFile = JsonConvert.DeserializeObject<TirFile>(content);
+                iconName = tirFile.name?.Trim();
+                fileToOpen = tirFile.file?.Trim();
+                exePath = tirFile.executor?.Trim();
+            } catch {
+                Utils.messageBox($"{filePath} 文件的格式有误", MessageBoxIcon.Error);
+                Application.Exit();
+                return;
+            }
             if(fileToOpen == null) {
                 Utils.messageBox("没有提供要打开的文件", MessageBoxIcon.Error);
                 Application.Exit();

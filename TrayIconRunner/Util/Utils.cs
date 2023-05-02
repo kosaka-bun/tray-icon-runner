@@ -36,11 +36,14 @@ public static class Utils {
     }
 
     public static string getAssociatedProgramPath(string extName) {
+        string typeNamePath = "Software\\Microsoft\\Windows\\CurrentVersion" +
+                              $"\\Explorer\\FileExts\\{extName}\\UserChoice";
         string extTypeKeyName;
-        using(RegistryKey extKey = Registry.ClassesRoot.OpenSubKey(extName)) {
-            if(extKey == null) return null;
-            extTypeKeyName = extKey.GetValue("") + 
-                "\\shell\\open\\command";
+        using(RegistryKey extKey = Registry.CurrentUser.OpenSubKey(typeNamePath)) {
+            object progId = extKey?.GetValue("ProgId");
+            if(progId == null) return null;
+            if(string.IsNullOrEmpty(progId.ToString())) return null;
+            extTypeKeyName = $"{progId}\\shell\\open\\command";
         }
         string runCommand;
         using(RegistryKey extTypeKey = Registry.ClassesRoot
