@@ -4,7 +4,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Windows.Forms;
-using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
+using TrayIconRunner.Data;
 using TrayIconRunner.Util;
 
 // ReSharper disable MemberCanBeMadeStatic.Global
@@ -53,10 +54,10 @@ public class Launcher {
                 StringComparison.Ordinal) + 1);
         } else {
             //解析专有文件
-            JObject jo = JObject.Parse(content);
-            iconName = jo["name"]?.Value<string>().Trim();
-            fileToOpen = jo["file"]?.Value<string>().Trim();
-            exePath = jo["executor"]?.Value<string>().Trim();
+            var tirFile = JsonConvert.DeserializeObject<TirFile>(content);
+            iconName = tirFile.name?.Trim();
+            fileToOpen = tirFile.file?.Trim();
+            exePath = tirFile.executor?.Trim();
             if(fileToOpen == null) {
                 Utils.messageBox("没有提供要打开的文件", MessageBoxIcon.Error);
                 Application.Exit();

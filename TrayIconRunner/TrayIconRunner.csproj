@@ -58,6 +58,7 @@
         <Reference Include="System.Xml" />
     </ItemGroup>
     <ItemGroup>
+        <Compile Include="Data\TirFile.cs" />
         <Compile Include="Launcher.cs" />
         <Compile Include="MainForm.cs">
           <SubType>Form</SubType>
