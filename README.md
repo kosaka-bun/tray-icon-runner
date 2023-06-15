@@ -2,7 +2,7 @@
 
 ![DotNet](https://img.shields.io/badge/.Net%20Framework-4.7.2-brightgreen?logo=dotnet)
 [![License](https://img.shields.io/github/license/kosaka-bun/tray-icon-runner?label=License&color=blue&logo=GitHub)](./LICENSE)
-![GitHub Stars](https://img.shields.io/github/stars/kosaka-bun/tray-icon-runner?label=Stars&logo=GitHub)
+![GitHub Stars](https://img.shields.io/github/stars/kosaka-bun/tray-icon-runner?label=Stars&logo=GitHub&style=flat)
 [![Release](https://img.shields.io/github/release/kosaka-bun/tray-icon-runner?label=Release&logo=GitHub)](../../releases)
 
 ## 简介
@@ -21,7 +21,7 @@
 
 首先[下载](../../releases/latest)TrayIconRunner的可执行程序，并将其解压到一个目录中。
 
-在其启动脚本所在的目录，即`{安装目录}/bin`目录下，创建一个名为`startup.tir`的文件，在其中输入以下内容并保存。
+在Elastic Search的启动脚本所在的目录，即`{Elastic Search安装目录}/bin`目录下，创建一个名为`startup.tir`的文件，在其中输入以下内容并保存。
 
 ```json
 {
