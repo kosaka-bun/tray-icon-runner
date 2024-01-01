@@ -2,7 +2,7 @@
 
 ![DotNet](https://img.shields.io/badge/.Net%20Framework-4.7.2-brightgreen?logo=dotnet)
 [![License](https://img.shields.io/github/license/kosaka-bun/tray-icon-runner?label=License&color=blue&logo=GitHub)](./LICENSE)
-![GitHub Stars](https://img.shields.io/github/stars/kosaka-bun/tray-icon-runner?label=Stars&logo=GitHub)
+![GitHub Stars](https://img.shields.io/github/stars/kosaka-bun/tray-icon-runner?label=Stars&logo=GitHub&style=flat)
 [![Release](https://img.shields.io/github/release/kosaka-bun/tray-icon-runner?label=Release&logo=GitHub)](../../releases)
 
 ## 简介
