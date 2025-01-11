@@ -8,6 +8,7 @@ using Newtonsoft.Json;
 using TrayIconRunner.Data;
 using TrayIconRunner.Util;
 
+// ReSharper disable MoveLocalFunctionAfterJumpStatement
 // ReSharper disable MemberCanBeMadeStatic.Global
 // ReSharper disable MemberCanBeMadeStatic.Local
 // ReSharper disable InconsistentNaming
@@ -39,25 +40,26 @@ public class Launcher {
         //读取专有文件
         string content = Utils.readFileToString(filePath);
         //如果文件为空，则调用该文件所在目录下，与该文件同名的，后缀名为.exe的文件
-        string exePath, extName, iconName, fileToOpen;
+        string exePath, extName, iconName, fileToOpen, arguments = null;
         #region
         if(content.Length <= 0) {
             extName = ".exe";
-            fileToOpen = exePath = filePath.Substring(0, 
-                filePath.Length - suffix.Length) + extName;
+            fileToOpen = exePath = filePath.Substring(
+                0, filePath.Length - suffix.Length
+            ) + extName;
             if(!File.Exists(exePath)) {
                 Utils.messageBox($"{exePath} 文件不存在", MessageBoxIcon.Error);
                 Application.Exit();
                 return;
             }
-            iconName = fileToOpen.Substring(fileToOpen.LastIndexOf("\\",
-                StringComparison.Ordinal) + 1);
+            iconName = fileToOpen.Substring(fileToOpen.LastIndexOf("\\", StringComparison.Ordinal) + 1);
         } else {
             //解析专有文件
             try {
                 var tirFile = JsonConvert.DeserializeObject<TirFile>(content);
                 iconName = tirFile.name?.Trim();
                 fileToOpen = tirFile.file?.Trim();
+                arguments = tirFile.arguments?.Trim();
                 exePath = tirFile.executor?.Trim();
             } catch {
                 Utils.messageBox($"{filePath} 文件的格式有误", MessageBoxIcon.Error);
@@ -70,8 +72,7 @@ public class Launcher {
                 return;
             }
             if(!fileToOpen.Contains(":\\")) {
-                fileToOpen = Utils.calcAbsolutePath(filePath,
-                    fileToOpen);
+                fileToOpen = Utils.calcAbsolutePath(filePath, fileToOpen);
             }
             if(!File.Exists(fileToOpen)) {
                 Utils.messageBox($"{fileToOpen} 文件不存在", MessageBoxIcon.Error);
@@ -79,25 +80,16 @@ public class Launcher {
                 return;
             }
             //读取指定扩展名的关联程序路径
-            int pointIndex = fileToOpen.LastIndexOf(".", 
-                StringComparison.Ordinal);
-            if(pointIndex == -1) {
-                Utils.messageBox($"未找到 {fileToOpen} 的关联程序", 
-                    MessageBoxIcon.Error);
-                Application.Exit();
-                return;
-            }
-            extName = fileToOpen.Substring(pointIndex);
+            int pointIndex = fileToOpen.LastIndexOf(".", StringComparison.Ordinal);
+            extName = pointIndex == -1 ? "" : fileToOpen.Substring(pointIndex);
             if(exePath == null) {
                 exePath = Utils.getAssociatedProgramPath(extName);
             }
-            // ReSharper disable once ConvertIfStatementToNullCoalescingExpression
             if(exePath == null) {
                 exePath = AssociatedPrograms.get(extName);
             }
             if(exePath == null) {
-                Utils.messageBox($"未找到 {fileToOpen} 的关联程序", 
-                    MessageBoxIcon.Error);
+                Utils.messageBox($"未找到 {fileToOpen} 的关联程序", MessageBoxIcon.Error);
                 Application.Exit();
                 return;
             }
@@ -109,28 +101,31 @@ public class Launcher {
         }
         #endregion
         if(extName.ToLower().Equals(".exe")) {
-            initProcess(fileToOpen);
+            initProcess(fileToOpen, arguments);
         } else if(AssociatedPrograms.isDirectRunExtName(extName.ToLower())) {
-            initProcess(fileToOpen, directRun: true);
+            initProcess(fileToOpen, arguments, true);
         } else {
-            initProcess(exePath, fileToOpen);
+            string realArgs = fileToOpen;
+            if(arguments != null) {
+                realArgs = $"\"{realArgs}\" {arguments}";
+            }
+            initProcess(exePath, realArgs);
         }
         //启动进程
-        Program.mainForm.systemTrayIcon.Icon = IconUtils.GetFileIcon(extName, 
-            false);
+        if(extName != "") {
+            Program.mainForm.systemTrayIcon.Icon = IconUtils.GetFileIcon(extName, false);
+        }
         Program.mainForm.systemTrayIcon.Text = iconName;
         process.Start();
         launched = true;
-        hookMinimizeEvent(AssociatedPrograms
-            .isDirectRunExtName(extName.ToLower()));
+        hookMinimizeEvent(AssociatedPrograms.isDirectRunExtName(extName.ToLower()));
         process.WaitForExit();
         //进程结束，取消hook并退出
         winEventListener.Interrupt();
         Application.Exit();
     }
 
-    private void initProcess(string fileName, string arg = null, 
-        bool directRun = false) {
+    private void initProcess(string fileName, string args = null, bool directRun = false) {
         process = new Process {
             StartInfo = {
                 //设置要启动的应用程序
@@ -147,8 +142,8 @@ public class Launcher {
                 CreateNoWindow = false
             }
         };
-        if(directRun || arg == null) return;
-        process.StartInfo.Arguments = arg.Contains("\"") ? arg : $"\"{arg}\"";
+        if(args == null) return;
+        process.StartInfo.Arguments = args;
     }
 
     private void hookMinimizeEvent(bool hookSubProcesses) {
@@ -176,8 +171,10 @@ public class Launcher {
         winEventListener.Start();
     }
     
-    private void winEventCallback(IntPtr hWinEventHook, uint eventType, IntPtr hWnd, 
-        int idObject, int idChild, uint dwEventThread, uint dwmsEventTime) {
+    private void winEventCallback(
+        IntPtr hWinEventHook, uint eventType, IntPtr hWnd, int idObject, 
+        int idChild, uint dwEventThread, uint dwmsEventTime
+    ) {
         if(idObject != 0 || idChild != 0) return;
         //判断事件是否来自于主窗口
         if(process.MainWindowHandle.ToInt32() != hWnd.ToInt32()) return;

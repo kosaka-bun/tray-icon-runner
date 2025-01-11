@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.Runtime.InteropServices;
 
@@ -11,8 +12,9 @@ namespace TrayIconRunner.Util {
 public static class IconUtils {
     
     [DllImport("Shell32.dll")]
-    private static extern int SHGetFileInfo(string pszPath, uint dwFileAttributes, 
-        ref SHFILEINFO psfi, uint cbFileInfo, uint uFlags);
+    private static extern int SHGetFileInfo(
+        string pszPath, uint dwFileAttributes, ref SHFILEINFO psfi, uint cbFileInfo, uint uFlags
+    );
 
     /// <summary>
     /// 从文件扩展名得到文件关联图标
@@ -26,8 +28,10 @@ public static class IconUtils {
         var fi = new SHFILEINFO();
         Icon ic = null;
         //SHGFI_ICON + SHGFI_USEFILEATTRIBUTES + SmallIcon   
-        int iTotal = SHGetFileInfo(fileName, 100, ref fi, 
-            0, (uint) (smallIcon ? 273 : 272));
+        int iTotal = SHGetFileInfo(
+            fileName, 100, ref fi, 
+            0, (uint) (smallIcon ? 273 : 272)
+        );
         if(iTotal > 0) {
             ic = Icon.FromHandle(fi.hIcon);
         }
@@ -35,6 +39,7 @@ public static class IconUtils {
     }
 }
 
+[SuppressMessage("ReSharper", "UnusedMember.Global")]
 public struct SHFILEINFO {
     
     public IntPtr hIcon;
