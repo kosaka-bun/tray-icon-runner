@@ -49,8 +49,7 @@ public class AllTest {
             "..\\dir3\\3.txt"
         };
         for(var i = 0; i < arg0.Length; i++) {
-            Console.WriteLine(Utils.calcAbsolutePath(arg0[i], 
-                arg1[i]));
+            Console.WriteLine(Utils.calcAbsolutePath(arg0[i], arg1[i]));
         }
     }
 }

@@ -30,7 +30,7 @@ public class Launcher {
 
     private readonly List<IntPtr> minimizeEventHookIds = new List<IntPtr>();
 
-    private Thread winEventListener;
+    private Thread hooker;
 
     public Launcher(string filePath) {
         this.filePath = filePath;
@@ -42,7 +42,7 @@ public class Launcher {
         //如果文件为空，则调用该文件所在目录下，与该文件同名的，后缀名为.exe的文件
         string exePath, extName, iconName, fileToOpen, arguments = null;
         #region
-        if(content.Length <= 0) {
+        if(content.Length < 1) {
             extName = ".exe";
             fileToOpen = exePath = filePath.Substring(
                 0, filePath.Length - suffix.Length
@@ -121,8 +121,7 @@ public class Launcher {
         hookMinimizeEvent(AssociatedPrograms.isDirectRunExtName(extName.ToLower()));
         process.WaitForExit();
         //进程结束，取消hook并退出
-        winEventListener.Interrupt();
-        Application.Exit();
+        hooker.Interrupt();
     }
 
     private void initProcess(string fileName, string args = null, bool directRun = false) {
@@ -156,10 +155,10 @@ public class Launcher {
                 (uint) pid, 0, 0
             ));
         }
-        winEventListener = new Thread(() => {
+        hooker = new Thread(() => {
             doHook(process.Id);
             if(hookSubProcesses) {
-                foreach(int sPid in Utils.getSubProcessId(process.Id)) {
+                foreach(int sPid in Utils.getSubProcessIdList(process.Id)) {
                     doHook(sPid);
                 }
             }
@@ -167,13 +166,14 @@ public class Launcher {
             foreach(IntPtr hookIds in minimizeEventHookIds) {
                 WinEventHookUtils.UnhookWinEvent(hookIds);
             }
+            Application.Exit();
         });
-        winEventListener.Start();
+        hooker.Start();
     }
     
     private void winEventCallback(
-        IntPtr hWinEventHook, uint eventType, IntPtr hWnd, int idObject, 
-        int idChild, uint dwEventThread, uint dwmsEventTime
+        IntPtr hWinEventHook, uint eventType, IntPtr hWnd, int idObject, int idChild, 
+        uint dwEventThread, uint dwmsEventTime
     ) {
         if(idObject != 0 || idChild != 0) return;
         //判断事件是否来自于主窗口

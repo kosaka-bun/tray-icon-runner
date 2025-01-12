@@ -28,8 +28,7 @@ public partial class MainForm : Form {
         if(!Program.launcher.launched) return;
         if(e.Button != MouseButtons.Left) return;
         if(isWindowShow) return;
-        WinEventHookUtils.ShowWindow(Program.launcher.process.MainWindowHandle, 
-            9);
+        WinEventHookUtils.ShowWindow(Program.launcher.process.MainWindowHandle, 9);
         WinEventHookUtils.SetForegroundWindow(Program.launcher.process.MainWindowHandle);
         isWindowShow = true;
     }

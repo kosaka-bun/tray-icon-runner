@@ -13,10 +13,10 @@ namespace TrayIconRunner.Util {
 public static class Utils {
     
     public static void messageBox(string msg, MessageBoxIcon icon) {
-        MessageBox.Show(msg, Constant.APP_NAME,
-            MessageBoxButtons.OK, icon,
-            MessageBoxDefaultButton.Button1, 
-            MessageBoxOptions.DefaultDesktopOnly);
+        MessageBox.Show(
+            msg, Constant.APP_NAME, MessageBoxButtons.OK, icon,
+            MessageBoxDefaultButton.Button1, MessageBoxOptions.DefaultDesktopOnly
+        );
     }
 
     // ReSharper disable once UnusedMember.Global
@@ -27,8 +27,7 @@ public static class Utils {
     
     //返回值已经过trim
     public static string readFileToString(string filePath) {
-        var fileStream = new FileStream(filePath, FileMode.Open,
-            FileAccess.Read);
+        var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
         var streamReader = new StreamReader(fileStream);
         string content = streamReader.ReadToEnd().Trim();
         streamReader.Close();
@@ -93,7 +92,7 @@ public static class Utils {
         return path;
     }
     
-    public static List<int> getSubProcessId(int pid) {
+    public static List<int> getSubProcessIdList(int pid) {
         var list = new List<int>();
         var searcher = new ManagementObjectSearcher(
             $"Select * From Win32_Process Where ParentProcessID = {pid}"
