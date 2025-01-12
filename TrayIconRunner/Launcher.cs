@@ -13,28 +13,22 @@ using TrayIconRunner.Util;
 // ReSharper disable MemberCanBeMadeStatic.Local
 // ReSharper disable InconsistentNaming
 
-namespace TrayIconRunner {
+namespace TrayIconRunner;
 
-public class Launcher {
+public class Launcher(string filePath) {
     
     /// <summary>
     /// 专有文件的后缀名
     /// </summary>
     private const string suffix = ".tir";
-    
-    private readonly string filePath;
 
     public Process process;
 
     public bool launched;
 
-    private readonly List<IntPtr> minimizeEventHookIds = new List<IntPtr>();
+    private readonly List<IntPtr> minimizeEventHookIds = [];
 
     private Thread hooker;
-
-    public Launcher(string filePath) {
-        this.filePath = filePath;
-    }
 
     public void launch() {
         //读取专有文件
@@ -82,12 +76,7 @@ public class Launcher {
             //读取指定扩展名的关联程序路径
             int pointIndex = fileToOpen.LastIndexOf(".", StringComparison.Ordinal);
             extName = pointIndex == -1 ? "" : fileToOpen.Substring(pointIndex);
-            if(exePath == null) {
-                exePath = Utils.getAssociatedProgramPath(extName);
-            }
-            if(exePath == null) {
-                exePath = AssociatedPrograms.get(extName);
-            }
+            exePath ??= Utils.getAssociatedProgramPath(extName) ?? AssociatedPrograms.get(extName);
             if(exePath == null) {
                 Utils.messageBox($"未找到 {fileToOpen} 的关联程序", MessageBoxIcon.Error);
                 Application.Exit();
@@ -121,7 +110,7 @@ public class Launcher {
         hookMinimizeEvent(AssociatedPrograms.isDirectRunExtName(extName.ToLower()));
         process.WaitForExit();
         //进程结束，取消hook并退出
-        hooker.Interrupt();
+        Application.Exit();
     }
 
     private void initProcess(string fileName, string args = null, bool directRun = false) {
@@ -166,7 +155,6 @@ public class Launcher {
             foreach(IntPtr hookIds in minimizeEventHookIds) {
                 WinEventHookUtils.UnhookWinEvent(hookIds);
             }
-            Application.Exit();
         });
         hooker.Start();
     }
@@ -182,6 +170,4 @@ public class Launcher {
         WinEventHookUtils.ShowWindow(hWnd, 0);
         Program.mainForm.isWindowShow = false;
     }
-}
-
 }

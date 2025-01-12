@@ -5,7 +5,7 @@ using TrayIconRunner.Util;
 // ReSharper disable MemberCanBePrivate.Global
 // ReSharper disable InconsistentNaming
 
-namespace TrayIconRunner {
+namespace TrayIconRunner;
 
 internal static class Program {
 
@@ -26,6 +26,4 @@ internal static class Program {
             Application.Run();
         }
     }
-}
-
 }

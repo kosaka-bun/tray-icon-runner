@@ -6,7 +6,7 @@ using TrayIconRunner.Util;
 // ReSharper disable MemberCanBePrivate.Global
 // ReSharper disable InconsistentNaming
 
-namespace TrayIconRunner {
+namespace TrayIconRunner;
 
 public partial class MainForm : Form {
     
@@ -32,6 +32,4 @@ public partial class MainForm : Form {
         WinEventHookUtils.SetForegroundWindow(Program.launcher.process.MainWindowHandle);
         isWindowShow = true;
     }
-}
-
 }

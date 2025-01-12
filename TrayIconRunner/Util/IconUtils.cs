@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 // ReSharper disable UnassignedField.Global
 // ReSharper disable ArrangeTypeMemberModifiers
 
-namespace TrayIconRunner.Util {
+namespace TrayIconRunner.Util;
 
 public static class IconUtils {
     
@@ -51,6 +51,4 @@ public struct SHFILEINFO {
     public char szDisplayName;
     
     public char szTypeName;
-}
-
 }

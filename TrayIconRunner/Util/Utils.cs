@@ -8,11 +8,11 @@ using Microsoft.Win32;
 
 // ReSharper disable InconsistentNaming
 
-namespace TrayIconRunner.Util {
+namespace TrayIconRunner.Util;
 
 public static class Utils {
     
-    public static void messageBox(string msg, MessageBoxIcon icon) {
+    public static void messageBox(string msg, MessageBoxIcon icon = MessageBoxIcon.Information) {
         MessageBox.Show(
             msg, Constant.APP_NAME, MessageBoxButtons.OK, icon,
             MessageBoxDefaultButton.Button1, MessageBoxOptions.DefaultDesktopOnly
@@ -104,6 +104,4 @@ public static class Utils {
         }
         return list;
     }
-}
-
 }

@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
-namespace TrayIconRunner.Data {
+namespace TrayIconRunner.Data;
 
 [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
 [SuppressMessage("ReSharper", "InconsistentNaming")]
@@ -13,6 +13,4 @@ public class TirFile {
     public string arguments { get; set; }
     
     public string executor { get; set; }
-}
-
 }

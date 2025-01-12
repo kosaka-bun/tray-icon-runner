@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 
 // ReSharper disable InconsistentNaming
 
-namespace TrayIconRunner.Util {
+namespace TrayIconRunner.Util;
 
 public static class WinEventHookUtils {
 
@@ -32,6 +32,4 @@ public static class WinEventHookUtils {
 
     [DllImport("user32.dll")]
     public static extern bool UnhookWinEvent(IntPtr hWinEventHook);
-}
-
 }
