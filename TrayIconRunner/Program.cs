@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Windows.Forms;
 using TrayIconRunner.Util;
 
@@ -18,12 +19,24 @@ internal static class Program {
             Utils.messageBox("没有提供要打开的文件", MessageBoxIcon.Error);
             return;
         }
+        Application.ThreadException += (_, e) => onException(e.Exception);
         string inputFilePath = args[0];
         mainForm = new MainForm();
         launcher = new Launcher(inputFilePath);
-        new Thread(launcher.launch).Start();
+        new Thread(() => {
+            try {
+                launcher.launch();
+            } catch(Exception e) {
+                onException(e);
+            }
+        }).Start();
         using(mainForm) {
             Application.Run();
         }
+    }
+
+    private static void onException(Exception e) {
+        Utils.messageBox(e.ToString(), MessageBoxIcon.Error);
+        Application.Exit();
     }
 }
