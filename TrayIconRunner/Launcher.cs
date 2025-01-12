@@ -89,10 +89,9 @@ public class Launcher(string filePath) {
             }
         }
         #endregion
-        if(extName.ToLower().Equals(".exe")) {
-            initProcess(fileToOpen, arguments);
-        } else if(AssociatedPrograms.isDirectRunExtName(extName.ToLower())) {
-            initProcess(fileToOpen, arguments, true);
+        bool isDirectRun = AssociatedPrograms.isDirectRunExtName(extName.ToLower());
+        if(extName.ToLower().Equals(".exe") || isDirectRun) {
+            initProcess(fileToOpen, arguments, isDirectRun);
         } else {
             string realArgs = fileToOpen;
             if(arguments != null) {
@@ -107,7 +106,7 @@ public class Launcher(string filePath) {
         Program.mainForm.systemTrayIcon.Text = iconName;
         process.Start();
         launched = true;
-        hookMinimizeEvent(AssociatedPrograms.isDirectRunExtName(extName.ToLower()));
+        hookMinimizeEvent(isDirectRun);
         process.WaitForExit();
         //进程结束，取消hook并退出
         Application.Exit();
@@ -138,22 +137,27 @@ public class Launcher(string filePath) {
         //https://learn.microsoft.com/zh-cn/windows/win32/winauto/event-constants
         const uint EVENT_TYPE_ID = 0x0016;
         void doHook(int pid) {
-            minimizeEventHookIds.Add(WinEventHookUtils.SetWinEventHook(
+            IntPtr hookId = WinEventHookUtils.SetWinEventHook(
                 EVENT_TYPE_ID, EVENT_TYPE_ID,
                 IntPtr.Zero, winEventCallback,
                 (uint) pid, 0, 0
-            ));
+            );
+            minimizeEventHookIds.Add(hookId);
         }
         hooker = new Thread(() => {
-            doHook(process.Id);
-            if(hookSubProcesses) {
-                foreach(int sPid in Utils.getSubProcessIdList(process.Id)) {
-                    doHook(sPid);
+            try {
+                doHook(process.Id);
+                if(hookSubProcesses) {
+                    foreach(int sPid in Utils.getSubProcessIdList(process.Id)) {
+                        doHook(sPid);
+                    }
                 }
+            } catch(Exception) {
+                //ignore
             }
             Application.Run();
-            foreach(IntPtr hookIds in minimizeEventHookIds) {
-                WinEventHookUtils.UnhookWinEvent(hookIds);
+            foreach(IntPtr hookId in minimizeEventHookIds) {
+                WinEventHookUtils.UnhookWinEvent(hookId);
             }
         });
         hooker.Start();
@@ -164,10 +168,14 @@ public class Launcher(string filePath) {
         uint dwEventThread, uint dwmsEventTime
     ) {
         if(idObject != 0 || idChild != 0) return;
-        //判断事件是否来自于主窗口
-        if(process.MainWindowHandle.ToInt32() != hWnd.ToInt32()) return;
-        //隐藏指定窗口
-        WinEventHookUtils.ShowWindow(hWnd, 0);
-        Program.mainForm.isWindowShow = false;
+        try {
+            //判断事件是否来自于主窗口
+            if(process.MainWindowHandle.ToInt32() != hWnd.ToInt32()) return;
+            //隐藏指定窗口
+            WinEventHookUtils.ShowWindow(hWnd, 0);
+            Program.mainForm.isWindowShow = false;
+        } catch(Exception e) {
+            Utils.messageBox(e.ToString(), MessageBoxIcon.Error);
+        }
     }
 }

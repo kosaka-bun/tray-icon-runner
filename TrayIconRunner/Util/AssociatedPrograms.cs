@@ -12,9 +12,7 @@ public static class AssociatedPrograms {
 
     private static readonly string system32Path = Environment.GetFolderPath(Environment.SpecialFolder.System);
 
-    private static readonly string[] directRunExtNames = [
-        ".bat", ".cmd"
-    ];
+    private static readonly string[] directRunExtNames = [".bat", ".cmd"];
 
     static AssociatedPrograms() {
         associatedProgramsMap.Add(".bat", $"{system32Path}\\cmd.exe");
