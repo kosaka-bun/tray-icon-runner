@@ -76,16 +76,18 @@ public class Launcher(string filePath) {
             //读取指定扩展名的关联程序路径
             int pointIndex = fileToOpen.LastIndexOf(".", StringComparison.Ordinal);
             extName = pointIndex == -1 ? "" : fileToOpen.Substring(pointIndex);
-            exePath ??= Utils.getAssociatedProgramPath(extName) ?? AssociatedPrograms.get(extName);
-            if(exePath == null) {
-                Utils.messageBox($"未找到 {fileToOpen} 的关联程序", MessageBoxIcon.Error);
-                Application.Exit();
-                return;
-            }
-            if(!File.Exists(exePath)) {
-                Utils.messageBox($"{exePath} 文件不存在", MessageBoxIcon.Error);
-                Application.Exit();
-                return;
+            if(!extName.ToLower().Equals(".exe") && exePath == null) {
+                exePath = Utils.getAssociatedProgramPath(extName) ?? AssociatedPrograms.get(extName);
+                if(exePath == null) {
+                    Utils.messageBox($"未找到 {fileToOpen} 的关联程序", MessageBoxIcon.Error);
+                    Application.Exit();
+                    return;
+                }
+                if(!File.Exists(exePath)) {
+                    Utils.messageBox($"{exePath} 文件不存在", MessageBoxIcon.Error);
+                    Application.Exit();
+                    return;
+                }
             }
         }
         #endregion

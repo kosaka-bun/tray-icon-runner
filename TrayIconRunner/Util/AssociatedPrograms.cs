@@ -19,7 +19,8 @@ public static class AssociatedPrograms {
     }
 
     public static string get(string extName) {
-        return associatedProgramsMap[extName];
+        associatedProgramsMap.TryGetValue(extName, out string result);
+        return result;
     }
 
     public static bool isDirectRunExtName(string extName) {
