@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows.Forms;
 using Newtonsoft.Json;
@@ -15,7 +16,7 @@ using TrayIconRunner.Util;
 
 namespace TrayIconRunner;
 
-public class Launcher(string filePath) {
+public class Launcher(string tirFilePath) {
     
     /// <summary>
     /// 专有文件的后缀名
@@ -26,20 +27,27 @@ public class Launcher(string filePath) {
 
     public bool launched;
 
+    private GCHandle winEventCallbackHandle;
+
     private readonly List<IntPtr> minimizeEventHookIds = [];
 
     private Thread hooker;
 
     public void launch() {
+        if(!tirFilePath.EndsWith(suffix)) {
+            Utils.messageBox($"只能使用扩展名为 {suffix} 的文件", MessageBoxIcon.Error);
+            Application.Exit();
+            return;
+        }
         //读取专有文件
-        string content = Utils.readFileToString(filePath);
+        string content = Utils.readFileToString(tirFilePath);
         //如果文件为空，则调用该文件所在目录下，与该文件同名的，后缀名为.exe的文件
         string exePath, extName, iconName, fileToOpen, arguments = null;
         #region
         if(content.Length < 1) {
             extName = ".exe";
-            fileToOpen = exePath = filePath.Substring(
-                0, filePath.Length - suffix.Length
+            fileToOpen = exePath = tirFilePath.Substring(
+                0, tirFilePath.Length - suffix.Length
             ) + extName;
             if(!File.Exists(exePath)) {
                 Utils.messageBox($"{exePath} 文件不存在", MessageBoxIcon.Error);
@@ -56,7 +64,7 @@ public class Launcher(string filePath) {
                 arguments = tirFile.arguments?.Trim();
                 exePath = tirFile.executor?.Trim();
             } catch {
-                Utils.messageBox($"{filePath} 文件的格式有误", MessageBoxIcon.Error);
+                Utils.messageBox($"{tirFilePath} 文件的格式有误", MessageBoxIcon.Error);
                 Application.Exit();
                 return;
             }
@@ -66,7 +74,7 @@ public class Launcher(string filePath) {
                 return;
             }
             if(!fileToOpen.Contains(":\\")) {
-                fileToOpen = Utils.calcAbsolutePath(filePath, fileToOpen);
+                fileToOpen = Utils.calcAbsolutePath(tirFilePath, fileToOpen);
             }
             if(!File.Exists(fileToOpen)) {
                 Utils.messageBox($"{fileToOpen} 文件不存在", MessageBoxIcon.Error);
@@ -91,9 +99,9 @@ public class Launcher(string filePath) {
             }
         }
         #endregion
-        bool isDirectRun = AssociatedPrograms.isDirectRunExtName(extName.ToLower());
-        if(extName.ToLower().Equals(".exe") || isDirectRun) {
-            initProcess(fileToOpen, arguments, isDirectRun);
+        bool isUseShell = AssociatedPrograms.isUseShellExtName(extName.ToLower());
+        if(extName.ToLower().Equals(".exe") || isUseShell) {
+            initProcess(fileToOpen, arguments, isUseShell);
         } else {
             string realArgs = fileToOpen;
             if(arguments != null) {
@@ -108,19 +116,25 @@ public class Launcher(string filePath) {
         Program.mainForm.systemTrayIcon.Text = iconName;
         process.Start();
         launched = true;
-        hookMinimizeEvent(isDirectRun);
+        hookMinimizeEvent();
         process.WaitForExit();
         //进程结束，取消hook并退出
         Application.Exit();
     }
 
-    private void initProcess(string fileName, string args = null, bool directRun = false) {
+    private void initProcess(string filePath, string args = null, bool useShell = false) {
+        string workDirectory = tirFilePath.Substring(
+            0,
+            tirFilePath.LastIndexOf("\\", StringComparison.Ordinal)
+        );
+        if(!workDirectory.Contains("\\")) workDirectory += "\\";
         process = new Process {
             StartInfo = {
                 //设置要启动的应用程序
-                FileName = fileName,
+                FileName = filePath,
                 //是否使用操作系统shell启动
-                UseShellExecute = directRun,
+                UseShellExecute = useShell,
+                WorkingDirectory = workDirectory,
                 //接受来自调用程序的输入信息
                 RedirectStandardInput = false,
                 //输出信息
@@ -135,32 +149,33 @@ public class Launcher(string filePath) {
         process.StartInfo.Arguments = args;
     }
 
-    private void hookMinimizeEvent(bool hookSubProcesses) {
+    private void hookMinimizeEvent() {
+        var callback = new WinEventHookUtils.WinEventDelegate(winEventCallback);
+        winEventCallbackHandle = GCHandle.Alloc(callback);
         //https://learn.microsoft.com/zh-cn/windows/win32/winauto/event-constants
         const uint EVENT_TYPE_ID = 0x0016;
         void doHook(int pid) {
-            IntPtr hookId = WinEventHookUtils.SetWinEventHook(
-                EVENT_TYPE_ID, EVENT_TYPE_ID,
-                IntPtr.Zero, winEventCallback,
-                (uint) pid, 0, 0
-            );
-            minimizeEventHookIds.Add(hookId);
-        }
-        hooker = new Thread(() => {
             try {
-                doHook(process.Id);
-                if(hookSubProcesses) {
-                    foreach(int sPid in Utils.getSubProcessIdList(process.Id)) {
-                        doHook(sPid);
-                    }
-                }
+                IntPtr hookId = WinEventHookUtils.SetWinEventHook(
+                    EVENT_TYPE_ID, EVENT_TYPE_ID,
+                    IntPtr.Zero, callback,
+                    (uint) pid, 0, 0
+                );
+                minimizeEventHookIds.Add(hookId);
             } catch(Exception) {
                 //ignore
+            }
+        }
+        hooker = new Thread(() => {
+            doHook(process.Id);
+            foreach(int sPid in Utils.getSubProcessIdList(process.Id)) {
+                doHook(sPid);
             }
             Application.Run();
             foreach(IntPtr hookId in minimizeEventHookIds) {
                 WinEventHookUtils.UnhookWinEvent(hookId);
             }
+            winEventCallbackHandle.Free();
         });
         hooker.Start();
     }

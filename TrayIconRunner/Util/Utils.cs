@@ -84,6 +84,9 @@ public static class Utils {
                 case "..":
                     path = path.Substring(0, path.LastIndexOf("\\", StringComparison.Ordinal));
                     continue;
+                case "":
+                    path = basePath.Substring(0, basePath.IndexOf("\\", StringComparison.Ordinal));
+                    continue;
                 default:
                     path += $"\\{part}";
                     continue;

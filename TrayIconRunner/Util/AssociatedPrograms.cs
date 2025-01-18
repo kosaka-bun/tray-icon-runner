@@ -23,7 +23,7 @@ public static class AssociatedPrograms {
         return result;
     }
 
-    public static bool isDirectRunExtName(string extName) {
+    public static bool isUseShellExtName(string extName) {
         return directRunExtNames.Contains(extName);
     }
 }
