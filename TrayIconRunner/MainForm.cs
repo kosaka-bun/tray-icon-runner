@@ -17,6 +17,9 @@ public partial class MainForm : Form {
     public MainForm() {
         InitializeComponent();
         customInitializeComponent();
+        //强制创建handle
+        //ReSharper disable once ReturnValueOfPureMethodIsNotUsed
+        Handle.ToString();
     }
     
     private void customInitializeComponent() {

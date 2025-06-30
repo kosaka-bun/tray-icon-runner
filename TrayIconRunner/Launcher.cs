@@ -103,17 +103,19 @@ public class Launcher(string tirFilePath) {
         if(extName.ToLower().Equals(".exe") || isUseShell) {
             initProcess(fileToOpen, arguments, isUseShell);
         } else {
-            string realArgs = fileToOpen;
+            var realArgs = $"\"{fileToOpen}\"";
             if(arguments != null) {
-                realArgs = $"\"{realArgs}\" {arguments}";
+                realArgs += arguments;
             }
             initProcess(exePath, realArgs);
         }
         //启动进程
-        if(extName != "") {
-            Program.mainForm.systemTrayIcon.Icon = IconUtils.GetFileIcon(extName, false);
-        }
-        Program.mainForm.systemTrayIcon.Text = iconName;
+        Program.mainForm.Invoke(() => {
+            if(extName != "") {
+                Program.mainForm.systemTrayIcon.Icon = IconUtils.GetFileIcon(extName, false);
+            }
+            Program.mainForm.systemTrayIcon.Text = iconName;
+        });
         process.Start();
         launched = true;
         hookMinimizeEvent();
