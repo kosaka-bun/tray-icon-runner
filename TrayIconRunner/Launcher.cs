@@ -40,7 +40,7 @@ public class Launcher(string tirFilePath) {
             return;
         }
         //读取专有文件
-        string content = Utils.readFileToString(tirFilePath);
+        var content = Utils.readFileToString(tirFilePath);
         //如果文件为空，则调用该文件所在目录下，与该文件同名的，后缀名为.exe的文件
         string exePath, extName, iconName, fileToOpen, arguments = null;
         #region
@@ -82,7 +82,7 @@ public class Launcher(string tirFilePath) {
                 return;
             }
             //读取指定扩展名的关联程序路径
-            int pointIndex = fileToOpen.LastIndexOf(".", StringComparison.Ordinal);
+            var pointIndex = fileToOpen.LastIndexOf(".", StringComparison.Ordinal);
             extName = pointIndex == -1 ? "" : fileToOpen.Substring(pointIndex);
             if(!extName.ToLower().Equals(".exe") && exePath == null) {
                 exePath = Utils.getAssociatedProgramPath(extName) ?? AssociatedPrograms.get(extName);
@@ -99,7 +99,7 @@ public class Launcher(string tirFilePath) {
             }
         }
         #endregion
-        bool isUseShell = AssociatedPrograms.isUseShellExtName(extName.ToLower());
+        var isUseShell = AssociatedPrograms.isUseShellExtName(extName.ToLower());
         if(extName.ToLower().Equals(".exe") || isUseShell) {
             initProcess(fileToOpen, arguments, isUseShell);
         } else {
@@ -125,7 +125,7 @@ public class Launcher(string tirFilePath) {
     }
 
     private void initProcess(string filePath, string args = null, bool useShell = false) {
-        string workDirectory = tirFilePath.Substring(
+        var workDirectory = tirFilePath.Substring(
             0,
             tirFilePath.LastIndexOf("\\", StringComparison.Ordinal)
         );
@@ -158,7 +158,7 @@ public class Launcher(string tirFilePath) {
         const uint EVENT_TYPE_ID = 0x0016;
         void doHook(int pid) {
             try {
-                IntPtr hookId = WinEventHookUtils.SetWinEventHook(
+                var hookId = WinEventHookUtils.SetWinEventHook(
                     EVENT_TYPE_ID, EVENT_TYPE_ID,
                     IntPtr.Zero, callback,
                     (uint) pid, 0, 0
@@ -170,11 +170,11 @@ public class Launcher(string tirFilePath) {
         }
         hooker = new Thread(() => {
             doHook(process.Id);
-            foreach(int sPid in Utils.getSubProcessIdList(process.Id)) {
+            foreach(var sPid in Utils.getSubProcessIdList(process.Id)) {
                 doHook(sPid);
             }
             Application.Run();
-            foreach(IntPtr hookId in minimizeEventHookIds) {
+            foreach(var hookId in minimizeEventHookIds) {
                 WinEventHookUtils.UnhookWinEvent(hookId);
             }
             winEventCallbackHandle.Free();

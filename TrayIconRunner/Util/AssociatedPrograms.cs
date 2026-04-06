@@ -19,7 +19,7 @@ public static class AssociatedPrograms {
     }
 
     public static string get(string extName) {
-        associatedProgramsMap.TryGetValue(extName, out string result);
+        associatedProgramsMap.TryGetValue(extName, out var result);
         return result;
     }
 

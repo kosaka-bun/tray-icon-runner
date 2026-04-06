@@ -11,7 +11,7 @@ namespace TrayIconRunner.Test;
 public class AllTest {
 
     private void run(string pathFilePath) {
-        string path = Utils.readFileToString(pathFilePath);
+        var path = Utils.readFileToString(pathFilePath);
         var args = new string[1];
         args[0] = path;
         Program.Main(args);
@@ -25,7 +25,7 @@ public class AllTest {
     [Test]
     public void getAssociatedProgramPathTest() {
         string[] args = [".zip", ".doc", ".xlsx", ".mp3"];
-        foreach(string s in args) {
+        foreach(var s in args) {
             Console.WriteLine(Utils.getAssociatedProgramPath(s));
         }
     }

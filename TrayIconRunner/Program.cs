@@ -24,7 +24,7 @@ internal static class Program {
         Application.ThreadException += (_, e) => onException(e);
         //捕获非UI线程上的未经处理的异常
         AppDomain.CurrentDomain.UnhandledException += (_, e) => onException(e);
-        string inputFilePath = args[0];
+        var inputFilePath = args[0];
         mainForm = new MainForm();
         launcher = new Launcher(inputFilePath);
         new Thread(() => launcher.launch()).Start();
@@ -34,7 +34,7 @@ internal static class Program {
     }
 
     private static void onException(EventArgs args) {
-        Exception e = args switch {
+        var e = args switch {
             ThreadExceptionEventArgs a => a.Exception,
             UnhandledExceptionEventArgs a => a.ExceptionObject as Exception,
             _ => null

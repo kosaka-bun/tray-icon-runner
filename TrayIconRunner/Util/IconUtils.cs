@@ -25,7 +25,7 @@ public static class IconUtils {
     public static Icon GetFileIcon(string fileName, bool smallIcon) {
         var fi = new SHFILEINFO();
         Icon ic = null;
-        int iTotal = SHGetFileInfo(
+        var iTotal = SHGetFileInfo(
             fileName, 100, ref fi, 
             0, (uint) (smallIcon ? 273 : 272)
         );
