@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows.Forms;
@@ -41,16 +42,27 @@ public class Launcher(string tirFilePath) {
         }
         //读取专有文件
         var content = Utils.readFileToString(tirFilePath);
-        //如果文件为空，则调用该文件所在目录下，与该文件同名的，后缀名为.exe的文件
-        string exePath, extName, iconName, fileToOpen, arguments = null;
+        //如果文件为空，则依次查找并调用该文件所在目录下，与该文件同名的，后缀名为.exe、.bat、.cmd的文件
+        string exePath = null, extName = null, iconName, fileToOpen = null, arguments = null;
         #region
         if(content.Length < 1) {
-            extName = ".exe";
-            fileToOpen = exePath = tirFilePath.Substring(
-                0, tirFilePath.Length - suffix.Length
-            ) + extName;
-            if(!File.Exists(exePath)) {
-                Utils.messageBox($"{exePath} 文件不存在", MessageBoxIcon.Error);
+            List<string> extNames = [".exe", ".bat", ".cmd"];
+            foreach(var name in extNames) {
+                fileToOpen = exePath = tirFilePath.Substring(
+                    0, tirFilePath.Length - suffix.Length
+                ) + name;
+                if(!File.Exists(exePath)) continue;
+                extName = name;
+                break;
+            }
+            if(extName == null) {
+                var msg = extNames.Aggregate("", (current, name) => {
+                    //ReSharper disable once ConvertToLambdaExpression
+                    return current + tirFilePath.Substring(
+                        0, tirFilePath.Length - suffix.Length
+                    ) + $"{name} 文件不存在\r\n";
+                });
+                Utils.messageBox(msg.Trim(), MessageBoxIcon.Error);
                 Application.Exit();
                 return;
             }
