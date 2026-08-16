@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -43,7 +44,7 @@ public class Launcher(string tirFilePath) {
         //读取专有文件
         var content = Utils.readFileToString(tirFilePath);
         //如果文件为空，则依次查找并调用该文件所在目录下，与该文件同名的，后缀名为.exe、.bat、.cmd的文件
-        string exePath = null, extName = null, iconName, fileToOpen = null, arguments = null;
+        string exePath = null, extName = null, iconName, iconPath = null, fileToOpen = null, arguments = null;
         #region
         if(content.Length < 1) {
             List<string> extNames = [".exe", ".bat", ".cmd"];
@@ -72,6 +73,7 @@ public class Launcher(string tirFilePath) {
             try {
                 var tirFile = JsonConvert.DeserializeObject<TirFile>(content);
                 iconName = tirFile.name?.Trim();
+                iconPath = tirFile.icon?.Trim();
                 fileToOpen = tirFile.file?.Trim();
                 arguments = tirFile.arguments?.Trim();
                 exePath = tirFile.executor?.Trim();
@@ -123,7 +125,12 @@ public class Launcher(string tirFilePath) {
         }
         //启动进程
         Program.mainForm.Invoke(() => {
-            if(extName != "") {
+            if(iconPath != null) {
+                if(!iconPath.Contains(":\\")) {
+                    iconPath = Utils.calcAbsolutePath(tirFilePath, iconPath);
+                }
+                Program.mainForm.systemTrayIcon.Icon = new Icon(iconPath, new Size(16, 16));
+            } else if(extName != "") {
                 Program.mainForm.systemTrayIcon.Icon = IconUtils.GetFileIcon(extName, false);
             }
             Program.mainForm.systemTrayIcon.Text = iconName;
